@@ -43,9 +43,9 @@ class NN():
 	X(float[]) : array of values to calculate sigmoid
 	'''	
 	def sigmoid(self, X):
-		result = np.zeros(X.size)
-		for i in range(len(X)):
-			result[i] = 1 / (1+math.exp(-1*X[i]))
+		result = np.zeros(X.shape)
+		for i in range(len(X[0])):
+			result[0][i] = 1 / (1+math.exp(-1*X[0][i]))
 		return result
 
 	'''
@@ -56,25 +56,24 @@ class NN():
 		a = np.array([X])
 		for i in range(len(self.W)):
 			z = np.dot(a, self.W[i])
-			print(z)
-			# a = self.sigmoid(z[0])
+			a = self.sigmoid(z)
 		return a
 
 	def train(self, X, Y):
-
+		X = np.array([X])
+		Y = np.array([Y])
 		n = 0.5
 		A = [0]*(len(self.W)+1)
 		Z = [0]*len(self.W)
-		A[0] = np.array([X])
+		A[0] = X
 		for i in range(len(self.W)):
 			Z[i] = np.dot(A[i], self.W[i])
 			A[i+1] = self.sigmoid(Z[i])
-
 		D = [0]*(len(self.W)+1)
-		D[0] = 1/2 * (A[-1]-Y)**2 * A[-1]*(1-A[-1])
+		D[0] = 0.5 * (A[-1]-Y)**2 * A[-1]*(1-A[-1])
 
 		for i in range(len(self.W)):
-			D[i+1] = np.dot(self.W[len(self.W)-i-1], D[i])
-			print(A[-2-i].shape, D[i].shape)
-			self.W[-1-i] = self.W[-1-i] - np.dot(A[-2-i], np.transpose(D[i]))
+			D[i+1] = np.transpose(np.dot(self.W[len(self.W)-i-1], np.transpose(D[i])))
+			self.W[-1-i] = self.W[-1-i] + n * np.dot(np.transpose(A[-2-i]), D[i])
+
 			
