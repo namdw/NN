@@ -76,12 +76,13 @@ class NN():
 			Z[i] = np.dot(A[i], self.W[i]) / np.prod(A[i].shape) + self.B[i] # z = a*w + b
 			A[i+1] = self.sigmoid(Z[i]) # a = sigma(a*w)
 		D = [0]*(len(self.W)+1)
-		D[0] = 0.5 * (A[-1]-Y)**2 / np.prod(A[-1].shape) * A[-1]*(1-A[-1])
+		D[0] = (A[-1]-Y) / np.prod(A[-1].shape) * A[-1]*(1-A[-1])
+		# D[0] = 0.5 * (A[-1]-Y)**2 / np.prod(A[-1].shape) * A[-1]*(1-A[-1])
 
 		for i in range(len(self.W)):
 			D[i+1] = np.transpose(np.dot(self.W[len(self.W)-i-1], np.transpose(D[i]))) * A[-2-i]*(1-A[-2-i])
-			self.W[-1-i] = self.W[-1-i] + n * np.dot(np.transpose(A[-2-i]), D[i])
-			self.B[-1-i] = self.B[-1-i] + n * D[i]
+			self.W[-1-i] = self.W[-1-i] - n * np.dot(np.transpose(A[-2-i]), D[i])
+			self.B[-1-i] = self.B[-1-i] - n * D[i]
 
 		# print(D)
 

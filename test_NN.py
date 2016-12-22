@@ -8,18 +8,19 @@ testNet = base.NN()
 
 print("number of nodes : ", testNet.numX, testNet.numW, testNet.numY)
 
+
+X = [1,1]
+Y = [0,1]
+
 ## do forward calculation on network
-print("First forward : ",testNet.forward([1,1]))
+print("Before train : ",testNet.forward(X))
 
 # print("weights : ", testNet.W)
 
-X = [1,1]
-Y = [1,0]
-
-for i in range(10):
+for i in range(1000):
 	testNet.train(X,Y)
 
 
-print(testNet.forward([1,1]))
+print("After train : ",testNet.forward(X))
 
 
