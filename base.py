@@ -53,24 +53,28 @@ class NN():
 	X(float[]) : array of inputs to calculate the forward propagation
 	'''
 	def forward(self, X):
-		a = X
+		a = np.array([X])
 		for i in range(len(self.W)):
 			z = np.dot(a, self.W[i])
-			a = self.sigmoid(z)
+			print(z)
+			# a = self.sigmoid(z[0])
 		return a
 
-	def train(self, X, Y, numEpoch):
+	def train(self, X, Y):
+
 		n = 0.5
-		A = [0]*(self.numW+1)
-		Z = [0]*self.numW
-		A[0] = X
+		A = [0]*(len(self.W)+1)
+		Z = [0]*len(self.W)
+		A[0] = np.array([X])
 		for i in range(len(self.W)):
 			Z[i] = np.dot(A[i], self.W[i])
 			A[i+1] = self.sigmoid(Z[i])
 
-		D = [0]*self.numW
+		D = [0]*(len(self.W)+1)
 		D[0] = 1/2 * (A[-1]-Y)**2 * A[-1]*(1-A[-1])
 
 		for i in range(len(self.W)):
 			D[i+1] = np.dot(self.W[len(self.W)-i-1], D[i])
+			print(A[-2-i].shape, D[i].shape)
+			self.W[-1-i] = self.W[-1-i] - np.dot(A[-2-i], np.transpose(D[i]))
 			
