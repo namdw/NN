@@ -41,17 +41,17 @@ class NN():
 		self.W = [0] * (len(self.numW)+1)
 		for i in range(len(self.W)):
 			if (i==0):
-				self.W[i] = np.random.rand(self.numX, self.numW[i])
+				self.W[i] = 10.0*np.random.rand(self.numX, self.numW[i])-5
 			elif (i==len(self.W)-1):
-				self.W[i] = np.random.rand(self.numW[i-1], self.numY)
+				self.W[i] = 10.0*np.random.rand(self.numW[i-1], self.numY)-5
 			else:
-				self.W[i] = np.random.rand(self.numW[i-1], self.numW[i])
+				self.W[i] = 10.0*np.random.rand(self.numW[i-1], self.numW[i])-5
 		self.B = [0] * (len(self.numW)+1)
 		for i in range(len(self.B)):
 			if (i==len(self.B)-1):
-				self.B[i] = np.random.rand(1,self.numY)
+				self.B[i] = 1.0*np.random.rand(1,self.numY)
 			else:
-				self.B[i] = np.random.rand(1,self.numW[i])
+				self.B[i] = 1.0*np.random.rand(1,self.numW[i])
 		self.Y = np.zeros([self.numY,1])
 
 	'''
@@ -86,10 +86,13 @@ class NN():
 				a = self.sigmoid(z)
 		return a
 
-	def train(self, X, Y):
+	def train(self, X, Y, *arg):
 		X = np.array([X])
 		Y = np.array([Y])
-		n = 1.0
+		if(len(arg)==1):
+			n = arg
+		else:
+			n = 1.0
 		A = [0]*(len(self.W)+1)
 		Z = [0]*len(self.W)
 		A[0] = X

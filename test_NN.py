@@ -3,6 +3,7 @@ import base
 import numpy as np
 import math
 import matplotlib.pyplot as plt
+import time
 
 '''
 Simple true/false test
@@ -36,23 +37,31 @@ print("After train (ReLu)    : ",testNet3.forward(X))
 '''
 Test case for function estimator
 '''
-sinNet = base.NN(1,1,[5,5])
+sinNet = base.NN(1,1,[10])
 
-X = np.arange(0,2*math.pi, 0.1)
-Y = np.cos(X)
+X = np.arange(0,2*math.pi, 0.2)
+Y = (np.sin(X))/2.0+0.5
 
-for i in range(50):
-	for j in range(len(X)):
-		sinNet.train(X[j], Y[j])
+num_iter = 500
+sample_x = np.zeros(num_iter)
+sample_y = np.zeros(num_iter)
+f = plt.figure(1)
+ax = f.gca()	
+f.show()
+for i in range(num_iter):
+	x = np.random.rand()*2*math.pi
+	y = (np.sin(x))/2.0+0.5
+	sinNet.train(x,y)
+	sample_x[i] = x
+	sample_y[i] = y
 
-Yhat = np.zeros(Y.shape)
-for i, x in enumerate(X):
-	Yhat[i] = sinNet.forward(x)
+	Yhat = np.zeros(Y.shape)
+	for i, x in enumerate(X):
+		Yhat[i] = sinNet.forward(x)
 
-plt.figure(1)
-plt.plot(X,Y)
+	ax.cla()
+	ax.plot(X, Y, X, Yhat, sample_x, sample_y, 'o')
+	f.canvas.draw()
 
-plt.figure(2)
-plt.plot(X,Yhat)
 
-plt.show()
+	time.sleep(0.01)
