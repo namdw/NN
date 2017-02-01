@@ -39,19 +39,21 @@ class NN():
 		## Initialize input, weigths, and outputs of the network
 		self.X = np.zeros([1, self.numX])
 		self.W = [0] * (len(self.numW)+1)
+		W_scale = 8.0
+		W_offset = W_scale/2.0
 		for i in range(len(self.W)):
 			if (i==0):
-				self.W[i] = 10.0*np.random.rand(self.numX, self.numW[i])-5
+				self.W[i] = W_scale*np.random.rand(self.numX, self.numW[i])-W_offset
 			elif (i==len(self.W)-1):
-				self.W[i] = 10.0*np.random.rand(self.numW[i-1], self.numY)-5
+				self.W[i] = W_scale*np.random.rand(self.numW[i-1], self.numY)-W_offset
 			else:
-				self.W[i] = 10.0*np.random.rand(self.numW[i-1], self.numW[i])-5
+				self.W[i] = W_scale*np.random.rand(self.numW[i-1], self.numW[i])-W_offset
 		self.B = [0] * (len(self.numW)+1)
 		for i in range(len(self.B)):
 			if (i==len(self.B)-1):
-				self.B[i] = 1.0*np.random.rand(1,self.numY)
+				self.B[i] = W_scale*np.random.rand(1,self.numY)-W_offset
 			else:
-				self.B[i] = 1.0*np.random.rand(1,self.numW[i])
+				self.B[i] = W_offset*np.random.rand(1,self.numW[i])-W_offset
 		self.Y = np.zeros([self.numY,1])
 
 	'''
@@ -78,6 +80,8 @@ class NN():
 		a = np.array([X])
 		for i in range(len(self.W)):
 			z = np.dot(a, self.W[i]) / np.prod(a.shape) + self.B[i] # z = a*w + b
+			if (i==len(self.W)-1):
+				return z
 			if(self.func=='sigmoid'):
 				a = self.sigmoid(z) # a = sigma(a*w)
 			elif(self.func=='relu'):
@@ -98,6 +102,8 @@ class NN():
 		A[0] = X
 		for i in range(len(self.W)):
 			Z[i] = np.dot(A[i], self.W[i]) / np.prod(A[i].shape) + self.B[i] # z = a*w + b
+			if (i==len(self.W)-1):
+				A[i+1] = Z[i]
 			if(self.func=='sigmoid'):
 				A[i+1] = self.sigmoid(Z[i]) # a = sigma(a*w)
 			elif(self.func=='relu'):
@@ -105,11 +111,15 @@ class NN():
 			else:
 				A[i+1] = self.sigmoid(Z[i])
 		D = [0]*(len(self.W)+1)
-		D[0] = (A[-1]-Y) / np.prod(A[-1].shape) * A[-1]*(1-A[-1])
+		# D[0] = (A[-1]-Y) * A[-1]*(1-A[-1])
+		D[0] = (A[-1]-Y)
 		# D[0] = 0.5 * (A[-1]-Y)**2 / np.prod(A[-1].shape) * A[-1]*(1-A[-1])
 
 		for i in range(len(self.W)):
-			D[i+1] = np.transpose(np.dot(self.W[len(self.W)-i-1], np.transpose(D[i]))) * A[-2-i]*(1-A[-2-i])
+			if (self.func=='sigmoid'):
+				D[i+1] = np.transpose(np.dot(self.W[-i-1], np.transpose(D[i]))) * A[-2-i]*(1-A[-2-i])
+			elif (self.func=='relu'):
+				D[i+1] = np.transpose(np.dot(self.W[-i-1], np.transpose(D[i]))) * (np.sign(A[-2-i])+1)/2
 			self.W[-1-i] = self.W[-1-i] - n * np.dot(np.transpose(A[-2-i]), D[i])
 			self.B[-1-i] = self.B[-1-i] - n * D[i]
 
