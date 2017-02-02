@@ -37,7 +37,7 @@ print("After train (ReLu)    : ",testNet3.forward(X))
 '''
 Test case for function approximator
 '''
-sinNet = base.NN(1,1,[10], func='relu')
+sinNet = base.NN(1,1,[20], func='relu')
 
 X = np.arange(0,math.pi*2.0, 0.2)
 Y = (np.sin(X))/2.0+0.5
@@ -67,4 +67,4 @@ for i in range(num_iter):
 
 
 	time.sleep(0.01)
-	# print(sinNet.W)
+print(sinNet.W)

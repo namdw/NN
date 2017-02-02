@@ -39,7 +39,7 @@ class NN():
 		## Initialize input, weigths, and outputs of the network
 		self.X = np.zeros([1, self.numX])
 		self.W = [0] * (len(self.numW)+1)
-		W_scale = 8.0
+		W_scale = 10.0
 		W_offset = W_scale/2.0
 		for i in range(len(self.W)):
 			if (i==0):
