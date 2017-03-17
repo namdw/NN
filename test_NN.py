@@ -25,7 +25,7 @@ print("Before train (ReLu)   : ",testNet3.forward(X))
 
 # print("weights : ", testNet.W)
 
-for i in range(100):
+for i in range(1000):
 	testNet.train(X,Y)
 	testNet3.train(X,Y)
 
@@ -37,35 +37,37 @@ print("After train (ReLu)    : ",testNet3.forward(X))
 '''
 Test case for function approximator
 '''
-sinNet = base.NN(1,1,[8], func='relu')
+DO = False
+if(DO==True):
+	sinNet = base.NN(1,1,[8], func='relu')
 
-X = np.arange(-math.pi,math.pi, 0.2)
-Y = (np.sin(X))/2.0+0.5
+	X = np.arange(-math.pi,math.pi, 0.2)
+	Y = (np.sin(X))/2.0+0.5
 
-num_iter = 2000
-sample_x = np.zeros(num_iter)
-sample_y = np.zeros(num_iter)
-f = plt.figure(1)
-ax = f.gca()
-f.show()
-# print(sinNet.W)
-for i in range(num_iter):
-	x = np.random.rand()*math.pi*2.0-math.pi
-	y = (np.sin(x))/2.0+0.5
-	if (x!=0 and y!=0):
-		sinNet.train(x,y, 0.02)
-		sample_x[i] = x
-		sample_y[i] = y
+	num_iter = 2000
+	sample_x = np.zeros(num_iter)
+	sample_y = np.zeros(num_iter)
+	f = plt.figure(1)
+	ax = f.gca()
+	f.show()
+	# print(sinNet.W)
+	for i in range(num_iter):
+		x = np.random.rand()*math.pi*2.0-math.pi
+		y = (np.sin(x))/2.0+0.5
+		if (x!=0 and y!=0):
+			sinNet.train(x,y, 0.02)
+			sample_x[i] = x
+			sample_y[i] = y
 
-	Yhat = np.zeros(Y.shape)
-	for i, x in enumerate(X):
-		Yhat[i] = sinNet.forward(x)
+		Yhat = np.zeros(Y.shape)
+		for i, x in enumerate(X):
+			Yhat[i] = sinNet.forward(x)
 
-	ax.cla()
-	ax.plot(X, Y, X, Yhat, sample_x, sample_y, 'o')
-	ax.axis([-3.5, 3.5, 0, 1.2])
-	f.canvas.draw()
+		ax.cla()
+		ax.plot(X, Y, X, Yhat, sample_x, sample_y, 'o')
+		ax.axis([-3.5, 3.5, 0, 1.2])
+		f.canvas.draw()
 
 
-	time.sleep(0.01)
-print(sinNet.W)
+		time.sleep(0.01)
+	print(sinNet.W)

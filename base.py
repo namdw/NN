@@ -161,9 +161,9 @@ class NN_FA():
 		## Initialize input, weigths, and outputs of the network
 		self.X = np.zeros([1, self.numX])
 		self.W = [0] * (len(self.numW)+1)
-		W_scale = 1.0
+		W_scale = 5.0
 		# W_offset = W_scale/2.0
-		W_offset = 0
+		W_offset = 2.5
 		for i in range(len(self.W)):
 			if (i==0):
 				self.W[i] = np.ones([self.numX, self.numW[i]])
@@ -203,8 +203,8 @@ class NN_FA():
 		a = np.array([X])
 		for i in range(len(self.W)):
 			z = np.dot(a, self.W[i]) / np.prod(a.shape) + self.B[i] # z = a*w + b
-			if (i==len(self.W)-1):
-				return z
+			# if (i==len(self.W)-1):
+			# 	return z
 			if(self.func=='sigmoid'):
 				a = self.sigmoid(z) # a = sigma(a*w)
 			elif(self.func=='relu'):
@@ -225,8 +225,8 @@ class NN_FA():
 		A[0] = X
 		for i in range(len(self.W)):
 			Z[i] = np.dot(A[i], self.W[i]) / np.prod(A[i].shape) + self.B[i] # z = a*w + b
-			if (i==len(self.W)-1):
-				A[i+1] = Z[i]
+			# if (i==len(self.W)-1):
+			# 	A[i+1] = Z[i]
 			if(self.func=='sigmoid'):
 				A[i+1] = self.sigmoid(Z[i]) # a = sigma(a*w)
 			elif(self.func=='relu'):
