@@ -72,6 +72,10 @@ class NN():
 			result[0][i] = max([0,X[0][i]])
 		return result
 
+	def relu2(self, x):
+		retult = x
+		return result
+
 	'''
 	NN forward propagation
 	X(float[]) : array of inputs to calculate the forward propagation
@@ -86,6 +90,8 @@ class NN():
 				a = self.sigmoid(z) # a = sigma(a*w)
 			elif(self.func=='relu'):
 				a = self.relu(z)
+			elif(self.func=='reul2'):
+				a = self.relu2(z)
 			else:
 				a = self.sigmoid(z)
 		return a
@@ -104,10 +110,12 @@ class NN():
 			Z[i] = np.dot(A[i], self.W[i]) / np.prod(A[i].shape) + self.B[i] # z = a*w + b
 			if (i==len(self.W)-1):
 				A[i+1] = Z[i]
-			if(self.func=='sigmoid'):
+			elif(self.func=='sigmoid'):
 				A[i+1] = self.sigmoid(Z[i]) # a = sigma(a*w)
 			elif(self.func=='relu'):
 				A[i+1] = self.relu(Z[i])
+			elif(self.func=='relu2'):
+				A[i+1] = self.relu2(Z[i])
 			else:
 				A[i+1] = self.sigmoid(Z[i])
 		D = [0]*(len(self.W)+1)
@@ -120,6 +128,8 @@ class NN():
 				D[i+1] = np.transpose(np.dot(self.W[-i-1], np.transpose(D[i]))) * A[-2-i]*(1-A[-2-i])
 			elif (self.func=='relu'):
 				D[i+1] = np.transpose(np.dot(self.W[-i-1], np.transpose(D[i]))) * (np.sign(A[-2-i])+1)/2
+			elif (self.func=='relu2'):
+				D[i+1] = np.transpose(np.dot(self.W[-i-1], np.transpose(D[i])))
 			self.W[-1-i] = self.W[-1-i] - n * np.dot(np.transpose(A[-2-i]), D[i])
 			self.B[-1-i] = self.B[-1-i] - n * D[i]
 
