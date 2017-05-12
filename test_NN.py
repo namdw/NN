@@ -39,21 +39,25 @@ Test case for function approximator
 '''
 DO = True
 if(DO==True):
-	sinNet = base.NN(1,1,[8], func='relu2')
+	sinNet = base.NN(1,1,[20], func='lrelu')
 
 	X = np.arange(-math.pi,math.pi, 0.2)
-	Y = (np.sin(X))/2.0+0.5
+	# Y = np.sin(X)
+	Y = abs(X)
 
 	num_iter = 2000
+	num_epoch = 10
 	sample_x = np.zeros(num_iter)
 	sample_y = np.zeros(num_iter)
 	
 	# print(sinNet.W)
 	for i in range(num_iter):
 		x = np.random.rand()*math.pi*2.0-math.pi
-		y = (np.sin(x))/2.0+0.5
+		# y = np.sin(x)
+		y = abs(x)
 		if (x!=0 and y!=0):
-			sinNet.train(x,y, 0.5)
+			for k in range(num_epoch):
+				sinNet.train(x,y, 0.2)
 			sample_x[i] = x
 			sample_y[i] = y
 
@@ -69,7 +73,8 @@ if(DO==True):
 			ax.cla()
 			# ax.plot(sample_x, sample_y, 'o', X, Y, X, Yhat)
 			ax.plot(X, Y, X, Yhat)
-			ax.axis([-3.5, 3.5, 0, 1.2])
+			# ax.axis([-3.5, 3.5, -1.2, 1.2])
+			ax.axis([-3.5, 3.5, -0.2, 3.5])
 			f.canvas.draw()
 			f.savefig(str(i)+" iterations.png")
 

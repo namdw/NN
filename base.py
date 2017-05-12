@@ -72,8 +72,12 @@ class NN():
 			result[0][i] = max([0,X[0][i]])
 		return result
 
-	def relu2(self, x):
-		retult = x
+	def relu2(self, X):
+		result = X
+		return result
+
+	def lrelu(self, X):
+		result = abs(X)
 		return result
 
 	'''
@@ -92,6 +96,8 @@ class NN():
 				a = self.relu(z)
 			elif(self.func=='reul2'):
 				a = self.relu2(z)
+			elif(self.func=='lrelu'):
+				a = self.lrelu(z)
 			else:
 				a = self.sigmoid(z)
 		return a
@@ -116,6 +122,8 @@ class NN():
 				A[i+1] = self.relu(Z[i])
 			elif(self.func=='relu2'):
 				A[i+1] = self.relu2(Z[i])
+			elif(self.func=='lrelu'):
+				A[i+1] = self.lrelu(Z[i])
 			else:
 				A[i+1] = self.sigmoid(Z[i])
 		D = [0]*(len(self.W)+1)
@@ -130,6 +138,8 @@ class NN():
 				D[i+1] = np.transpose(np.dot(self.W[-i-1], np.transpose(D[i]))) * (np.sign(A[-2-i])+1)/2
 			elif (self.func=='relu2'):
 				D[i+1] = np.transpose(np.dot(self.W[-i-1], np.transpose(D[i])))
+			elif (self.func=='lrelu'):
+				D[i+1] = np.transpose(np.dot(self.W[-i-1], np.transpose(D[i]))) * 1 if A[-2-i]>=0 else 0.01
 			self.W[-1-i] = self.W[-1-i] - n * np.dot(np.transpose(A[-2-i]), D[i])
 			self.B[-1-i] = self.B[-1-i] - n * D[i]
 
