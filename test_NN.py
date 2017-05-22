@@ -9,7 +9,7 @@ import time
 Simple true/false test
 '''
 ## initializing a blank network exmamples
-testNet = base.NN()
+testNet = base.NN(func='sigmoid')
 testNet2 = base.NN(2,2,[4,4])
 testNet3 = base.NN(func='relu')
 
@@ -39,14 +39,14 @@ Test case for function approximator
 '''
 DO = True
 if(DO==True):
-	sinNet = base.NN(1,1,[20], func='lrelu')
+	sinNet = base.NN(1,1,[20], func='relu')
 
 	X = np.arange(-math.pi,math.pi, 0.2)
 	# Y = np.sin(X)
 	Y = abs(X)
 
-	num_iter = 2000
-	num_epoch = 10
+	num_iter = 20
+	num_epoch = 3
 	sample_x = np.zeros(num_iter)
 	sample_y = np.zeros(num_iter)
 	
@@ -57,7 +57,7 @@ if(DO==True):
 		y = abs(x)
 		if (x!=0 and y!=0):
 			for k in range(num_epoch):
-				sinNet.train(x,y, 0.2)
+				sinNet.train([x],[y], 0.2)
 			sample_x[i] = x
 			sample_y[i] = y
 
@@ -78,6 +78,6 @@ if(DO==True):
 			f.canvas.draw()
 			f.savefig(str(i)+" iterations.png")
 
+			print(sinNet.W)
 		time.sleep(0.01)
 	# f.savefig(str(num_iter)+" iterations.png")
-	print(sinNet.W)
