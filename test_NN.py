@@ -39,21 +39,13 @@ Test case for function approximator
 '''
 DO = True
 if(DO==True):
-<<<<<<< HEAD
-	sinNet = base.NN(1,1,[128], func='relu')
-=======
 	sinNet = base.NN(1,1,[128,128], func='lrelu')
->>>>>>> 632962e45a3c98924711682ff0b1ad42ee8cd691
 
 	X = np.arange(-math.pi,math.pi, 0.2)
 	# Y = np.sin(X)
 	Y = abs(X)
 
-<<<<<<< HEAD
 	num_iter = 500
-=======
-	num_iter = 200
->>>>>>> 632962e45a3c98924711682ff0b1ad42ee8cd691
 	num_epoch = 3
 	sample_x = np.zeros(num_iter)
 	sample_y = np.zeros(num_iter)
