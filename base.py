@@ -135,15 +135,21 @@ class NN():
 		# D[0] = (A[-1]-Y) * A[-1]*(1-A[-1])
 		D[0] = (A[-1]-Y)
 		# D[0] = 0.5 * (A[-1]-Y)**2 / np.prod(A[-1].shape) * A[-1]*(1-A[-1])
-
+		np.seterr(all='raise')
 		for i in range(len(self.W)):
 			if (self.func=='sigmoid'):
 				D[i+1] = np.multiply(np.transpose(np.dot(self.W[-i-1], np.transpose(D[i]))), np.multiply(A[-2-i],(1-A[-2-i])))
 			elif (self.func=='relu'):
-				D[i+1] = np.multiply(np.transpose(np.dot(self.W[-i-1], np.transpose(D[i]))), (np.sign(A[-2-i])+1)/2)
+				# print([1 if element>0 else 0 for element in A[-2-i][0]])
+				# try:
+				print(np.transpose(np.dot(self.W[-i-1], np.transpose(D[i]))))
+				D[i+1] = np.multiply(np.transpose(np.dot(self.W[-i-1], np.transpose(D[i]))), np.array([1 if element>0 else 0 for element in A[-2-i][0]]))
+				# except:
+				# 	print("Error!")
+				# 	print(np.transpose(np.dot(self.W[-i-1], np.transpose(D[i]))))
 			elif (self.func=='relu2'):
 				D[i+1] = np.transpose(np.dot(self.W[-i-1], np.transpose(D[i])))
 			elif (self.func=='lrelu'):
-				D[i+1] = np.multiply(np.transpose(np.dot(self.W[-i-1], np.transpose(D[i]))) , [1 if element>=0 else 0.01 for element in A[-2-i][0]])
-			self.W[-1-i] = self.W[-1-i] - n * np.dot(np.transpose(A[-2-i])/np.prod(A[-2-i].shape), D[i])
-			self.B[-1-i] = self.B[-1-i] - n * D[i]
+				D[i+1] = np.multiply(np.transpose(np.dot(self.W[-i-1], np.transpose(D[i]))), [1 if element>0 else 0.001 for element in A[-2-i][0]])
+			self.W[-1-i] = self.W[-1-i] - n * np.dot(np.transpose(A[-2-i])/np.prod(A[-2-i].shape), D[i+1])
+			self.B[-1-i] = self.B[-1-i] - n * D[i+1]

@@ -39,14 +39,14 @@ Test case for function approximator
 '''
 DO = True
 if(DO==True):
-	sinNet = base.NN(1,1,[128,128], func='lrelu')
+	sinNet = base.NN(1,1,[128,128], func='relu')
 
 	X = np.arange(-math.pi,math.pi, 0.2)
 	# Y = np.sin(X)
 	Y = abs(X)
 
-	num_iter = 500
-	num_epoch = 3
+	num_iter = 200
+	num_epoch = 1
 	sample_x = np.zeros(num_iter)
 	sample_y = np.zeros(num_iter)
 	
@@ -78,6 +78,6 @@ if(DO==True):
 			f.canvas.draw()
 			f.savefig(str(i)+" iterations.png")
 
-			print(sinNet.W)
+			# print(sinNet.W)
 		time.sleep(0.01)
 	# f.savefig(str(num_iter)+" iterations.png")
