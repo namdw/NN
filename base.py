@@ -16,7 +16,7 @@ class NN():
 		self.numX = 2
 		self.numW = [5]
 		self.numY = 2
-		self.func = 'relu'
+		self.func = 'relu' # default function set to relu
 
 		## Initialize input variables
 		if (len(args)>0):
@@ -82,7 +82,9 @@ class NN():
 		return result
 
 	def lrelu(self, X):
-		result = abs(X)
+		result = np.zeros(X.shape)
+		for i in range(len(X[0])):
+			result[0][i] = X[0][i] if X[0][i] else 0.001*X[0][i]
 		return result
 
 	'''
@@ -92,6 +94,7 @@ class NN():
 	def forward(self, X):
 		a = np.array([X])
 		for i in range(len(self.W)):
+			# print(np.dot(a, self.W[i]) / np.prod(a.shape))
 			z = np.dot(a, self.W[i]) / np.prod(a.shape) + self.B[i] # z = a*w + b
 			if (i==len(self.W)-1):
 				return z
@@ -135,21 +138,17 @@ class NN():
 		# D[0] = (A[-1]-Y) * A[-1]*(1-A[-1])
 		D[0] = (A[-1]-Y)
 		# D[0] = 0.5 * (A[-1]-Y)**2 / np.prod(A[-1].shape) * A[-1]*(1-A[-1])
-		np.seterr(all='raise')
+		# np.seterr(all='raise')
 		for i in range(len(self.W)):
 			if (self.func=='sigmoid'):
 				D[i+1] = np.multiply(np.transpose(np.dot(self.W[-i-1], np.transpose(D[i]))), np.multiply(A[-2-i],(1-A[-2-i])))
 			elif (self.func=='relu'):
-				# print([1 if element>0 else 0 for element in A[-2-i][0]])
-				# try:
-				print(np.transpose(np.dot(self.W[-i-1], np.transpose(D[i]))))
 				D[i+1] = np.multiply(np.transpose(np.dot(self.W[-i-1], np.transpose(D[i]))), np.array([1 if element>0 else 0 for element in A[-2-i][0]]))
-				# except:
-				# 	print("Error!")
-				# 	print(np.transpose(np.dot(self.W[-i-1], np.transpose(D[i]))))
 			elif (self.func=='relu2'):
 				D[i+1] = np.transpose(np.dot(self.W[-i-1], np.transpose(D[i])))
 			elif (self.func=='lrelu'):
-				D[i+1] = np.multiply(np.transpose(np.dot(self.W[-i-1], np.transpose(D[i]))), [1 if element>0 else 0.001 for element in A[-2-i][0]])
-			self.W[-1-i] = self.W[-1-i] - n * np.dot(np.transpose(A[-2-i])/np.prod(A[-2-i].shape), D[i+1])
-			self.B[-1-i] = self.B[-1-i] - n * D[i+1]
+				D[i+1] = np.multiply(np.transpose(np.dot(self.W[-i-1], np.transpose(D[i]))), np.array([1 if element>0 else 0.001 for element in A[-2-i][0]]))
+			else:
+				D[i+1] = np.multiply(np.transpose(np.dot(self.W[-i-1], np.transpose(D[i]))), np.array([1 if element>0 else 0 for element in A[-2-i][0]]))
+			self.W[-1-i] = self.W[-1-i] - n * (np.dot(np.transpose(A[-2-i])/np.prod(A[-2-i].shape), D[i]))
+			self.B[-1-i] = self.B[-1-i] - n * D[i]
