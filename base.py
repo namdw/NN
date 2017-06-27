@@ -64,7 +64,7 @@ class NN():
 	'''	
 	def sigmoid(self, X):
 		result = np.zeros(X.shape)
-		for i in range(len(X[0])):
+		for i in range(len(X[0][:])):
 			try:
 				result[0][i] = 1 / (1+math.exp(-1*X[0][i])) # sigmoid function 
 			except OverflowError:
@@ -73,7 +73,7 @@ class NN():
 
 	def relu(self, X):
 		result = np.zeros(X.shape)
-		for i in range(len(X[0])):
+		for i in range(len(X[0][:])):
 			result[0][i] = max([0,X[0][i]])
 		return result
 
@@ -83,7 +83,7 @@ class NN():
 
 	def lrelu(self, X):
 		result = np.zeros(X.shape)
-		for i in range(len(X[0])):
+		for i in range(len(X[0][:])):
 			result[0][i] = X[0][i] if X[0][i] else 0.001*X[0][i]
 		return result
 
@@ -111,8 +111,9 @@ class NN():
 		return a
 
 	def train(self, X, Y, *arg):
-		X = np.array([X])
-		Y = np.array([Y])
+		if(type(X)==type([])):
+			X = np.array([X])
+			Y = np.array([Y])
 		if(len(arg)==1):
 			n = arg
 		else:
@@ -138,12 +139,15 @@ class NN():
 		# D[0] = (A[-1]-Y) * A[-1]*(1-A[-1])
 		D[0] = (A[-1]-Y)
 		# D[0] = 0.5 * (A[-1]-Y)**2 / np.prod(A[-1].shape) * A[-1]*(1-A[-1])
-		# np.seterr(all='raise')
+		np.seterr(all='raise')
 		for i in range(len(self.W)):
 			if (self.func=='sigmoid'):
 				D[i+1] = np.multiply(np.transpose(np.dot(self.W[-i-1], np.transpose(D[i]))), np.multiply(A[-2-i],(1-A[-2-i])))
 			elif (self.func=='relu'):
-				D[i+1] = np.multiply(np.transpose(np.dot(self.W[-i-1], np.transpose(D[i]))), np.array([1 if element>0 else 0 for element in A[-2-i][0]]))
+				try:
+					D[i+1] = np.multiply(np.transpose(np.dot(self.W[-i-1], np.transpose(D[i]))), np.array([1 if element>0 else 0 for element in A[-2-i][0]]))
+				except:
+					print(np.transpose(np.dot(self.W[-i-1], np.transpose(D[i]))))
 			elif (self.func=='relu2'):
 				D[i+1] = np.transpose(np.dot(self.W[-i-1], np.transpose(D[i])))
 			elif (self.func=='lrelu'):
