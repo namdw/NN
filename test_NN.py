@@ -25,7 +25,7 @@ print("Before train (ReLu)   : ",testNet3.forward(X))
 
 # print("weights : ", testNet.W)
 
-for i in range(100):
+for i in range(10):
 	testNet.train(X,Y)
 	testNet3.train(X,Y)
 
