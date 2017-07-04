@@ -17,6 +17,7 @@ class NN():
 		self.numW = [5]
 		self.numY = 2
 		self.func = 'relu' # default function set to relu
+		self.epoch = 3
 
 		## Initialize input variables
 		if (len(args)>0):
@@ -36,6 +37,8 @@ class NN():
 			if(name=='func'):
 				self.func = value
 				print('activation :', value)
+			if(name=='epoch'):
+				self.epoch = value
 
 
 		## Initialize input, weigths, and outputs of the network
@@ -84,7 +87,7 @@ class NN():
 	def lrelu(self, X):
 		result = np.zeros(X.shape)
 		for i in range(len(X[0][:])):
-			result[0][i] = X[0][i] if X[0][i] else 0.001*X[0][i]
+			result[0][i] = X[0][i] if X[0][i] > 0 else 0.001*X[0][i]
 		return result
 
 	'''
@@ -95,7 +98,7 @@ class NN():
 		a = np.array([X])
 		for i in range(len(self.W)):
 			# print(np.dot(a, self.W[i]) / np.prod(a.shape))
-			z = np.dot(a, self.W[i]) / np.prod(a.shape) + self.B[i] # z = a*w + b
+			z = np.dot(a / np.prod(a.shape), self.W[i]) + self.B[i] # z = a*w + b
 			if (i==len(self.W)-1):
 				return z
 			if(self.func=='sigmoid'):
@@ -122,7 +125,7 @@ class NN():
 		Z = [0]*len(self.W)
 		A[0] = X
 		for i in range(len(self.W)):
-			Z[i] = np.dot(A[i], self.W[i]) / np.prod(A[i].shape) + self.B[i] # z = a*w + b
+			Z[i] = np.dot(A[i] / np.prod(A[i].shape), self.W[i]) + self.B[i] # z = a*w + b
 			if (i==len(self.W)-1):
 				A[i+1] = Z[i]
 			elif(self.func=='sigmoid'):
