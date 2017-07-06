@@ -17,7 +17,7 @@ testNet3 = base.NN(func='relu')
 print("number of nodes : ", testNet.numX, testNet.numW, testNet.numY)
 
 
-X = [1,1]
+X = [1,0]
 Y = [0,1]
 
 ## do forward calculation on network
@@ -38,7 +38,7 @@ print("After train (ReLu)    : ",testNet3.forward(X))
 '''
 Test case for function approximator
 '''
-DO = True
+DO = False
 GRAPHICS = True
 if(DO==True):
 	sinNet = base.NN(1,1,[128,256,128], func='lrelu')

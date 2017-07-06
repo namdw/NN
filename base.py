@@ -8,7 +8,7 @@ class NN():
 	input:
 	numX, numW, numY
 	numX(int) : number of inputs nodes of the network. Default 2
-	numW([int]) : list of number of weigth for each hidden layer. [numW1, numW2,...,numWH]. Default [5]
+	numW([int]) : list of number of weight for each hidden layer. [numW1, numW2,...,numWH]. Default [5]
 	numY(int) : number of outputs to the network. Default 2
 	'''
 	def __init__(self, *args, **kwargs):
@@ -18,6 +18,7 @@ class NN():
 		self.numY = 2
 		self.func = 'relu' # default function set to relu
 		self.epoch = 3
+		self.weight = 10
 
 		## Initialize input variables
 		if (len(args)>0):
@@ -38,13 +39,15 @@ class NN():
 				self.func = value
 				print('activation :', value)
 			if(name=='epoch'):
-				self.epoch = value
+				self.epoch = int(value)
+			if(name=='weight'):
+				self.weight = int(value)
 
 
-		## Initialize input, weigths, and outputs of the network
+		## Initialize input, weights, and outputs of the network
 		self.X = np.zeros([1, self.numX])
 		self.W = [0] * (len(self.numW)+1)
-		W_scale = 10.0
+		W_scale = self.weight
 		W_offset = W_scale/2.0
 		for i in range(len(self.W)):
 			if (i==0):
@@ -95,7 +98,9 @@ class NN():
 	X(float[]) : array of inputs to calculate the forward propagation
 	'''
 	def forward(self, X):
-		a = np.array([X])
+		if(type(X)==type([])):
+			X = np.array([X])
+		a = X
 		for i in range(len(self.W)):
 			# print(np.dot(a, self.W[i]) / np.prod(a.shape))
 			z = np.dot(a / np.prod(a.shape), self.W[i]) + self.B[i] # z = a*w + b
