@@ -10,8 +10,8 @@ import random
 Simple true/false test
 '''
 ## initializing a blank network exmamples
-testNet = base.NN(2,2,[128,128], func='sigmoid', weight=1)
-testNet3 = base.NN(2,2,[128,128], func='relu', weight=1, dropout=0.8)
+testNet = base.NN(2,2,[5,5], func='sigmoid', weight=5, dropout=1.0)
+testNet3 = base.NN(2,2,[128,128], func='relu', weight=5, dropout=0.8)
 
 print("number of nodes : ", testNet.numX, testNet.numW, testNet.numY)
 
@@ -25,9 +25,9 @@ print("Before train (ReLu)   : ",testNet3.forward(X))
 
 # print("weights : ", testNet.W)
 
-for i in range(10):
-	testNet.train(X,Y,0.01)
-	testNet3.train(X,Y,0.001)
+for i in range(1000):
+	testNet.train(X,Y,0.1)
+	testNet3.train(X,Y,0.1)
 
 
 print("After train (sigmoid) : ",testNet.forward(X))
@@ -37,12 +37,12 @@ print("After train (ReLu)    : ",testNet3.forward(X))
 '''
 Test case for function approximator
 '''
-DO = True
+DO = False
 GRAPHICS = True
 if(DO==True):
-	sinNet = base.NN(1,1,[128,256,128], func='relu', dropout=0.8, weight=1.0)
+	sinNet = base.NN(1,1,[128,256,128], func='lrelu', dropout=0.8, weight='xavier')
 
-	X = np.arange(-2*math.pi,2*math.pi, 0.2)
+	X = np.arange(-2*math.pi,2*math.pi, 0.01)
 	# Y = np.sin(X)
 	Y = np.sin(X)
 
@@ -58,7 +58,7 @@ if(DO==True):
 		y = np.sin(x) + 0.1 * (2*random.random()-1)
 		if (x!=0 and y!=0):
 			for k in range(num_epoch):
-				sinNet.train([x],[y], 0.003)
+				sinNet.train([x],[y], 0.02)
 			sample_x[i] = x
 			sample_y[i] = y
 
