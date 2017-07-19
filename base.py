@@ -42,7 +42,7 @@ class NN():
 			if(name=='epoch'):
 				self.epoch = int(value)
 			if(name=='weight'):
-				if(value=='xavier'):
+				if(value=='xavier' or value=='he'):
 					self.weight = value
 				else:
 					self.weight = int(value)
