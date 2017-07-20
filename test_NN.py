@@ -37,7 +37,7 @@ print("After train (ReLu)    : ",testNet3.forward(X))
 '''
 Test case for function approximator
 '''
-DO = False
+DO = True
 GRAPHICS = True
 if(DO==True):
 	sinNet = base.NN(1,1,[128,256,128], func='lrelu', dropout=0.8, weight='xavier')
