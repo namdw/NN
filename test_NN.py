@@ -54,6 +54,7 @@ if(DO==True):
 	# print(sinNet.W)
 	for i in range(num_iter):
 		x = np.random.rand()*math.pi*6.0-3*math.pi
+		# x = (math.pi*6/100*num_iter)%(math.pi*6)-math.pi*3
 		# y = np.sin(x)
 		y = np.sin(x) + 0.1 * (2*random.random()-1)
 		if (x!=0 and y!=0):
