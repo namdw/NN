@@ -40,11 +40,11 @@ Test case for function approximator
 DO = True
 GRAPHICS = True
 if(DO==True):
-	sinNet = base.NN(1,1,[128,256,128], func='lrelu', dropout=0.8, weight='xavier')
+	sinNet = base.NN(1,1,[128,256,128], func='lrelu', dropout=0.8, weight=10)
 
-	X = np.arange(-2*math.pi,2*math.pi, 0.01)
+	X = np.arange(-math.pi/2,math.pi/2, 0.01)
 	# Y = np.sin(X)
-	Y = np.sin(X)
+	Y = np.sin(X*4)
 
 	num_iter = 2000
 	num_epoch = 5
@@ -53,10 +53,10 @@ if(DO==True):
 	
 	# print(sinNet.W)
 	for i in range(num_iter):
-		x = np.random.rand()*math.pi*6.0-3*math.pi
+		x = np.random.rand()*math.pi/2-math.pi/4
 		# x = (math.pi*6/100*num_iter)%(math.pi*6)-math.pi*3
 		# y = np.sin(x)
-		y = np.sin(x) + 0.1 * (2*random.random()-1)
+		y = np.sin(x*4) + 0.1 * (2*random.random()-1)
 		if (x!=0 and y!=0):
 			for k in range(num_epoch):
 				sinNet.train([x],[y], 0.02)
