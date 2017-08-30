@@ -13,6 +13,17 @@ Simple true/false test
 testNet = base.NN(2,2,[5,5], func='sigmoid', weight=5, dropout=1.0)
 testNet3 = base.NN(2,2,[128,128], func='relu', weight=5, dropout=0.8)
 
+layer1 = base.Layer('input',2)
+layer2 = base.Layer('hidden',5, func='lrelu', dropout=0.8)
+layer3 = base.Layer('hidden',5, func='sigmoid', dropout=0.8)
+layer4 = base.Layer('output',2)
+
+buildNet = base.NNb()
+buildNet.addLayer(layer1)
+buildNet.addLayer(layer2)
+buildNet.addLayer(layer3)
+buildNet.addLayer(layer4)
+
 print("number of nodes : ", testNet.numX, testNet.numW, testNet.numY)
 
 
@@ -21,23 +32,23 @@ Y = [0,1]
 
 ## do forward calculation on network
 print("Before train (sigmoid): ",testNet.forward(X))
-print("Before train (ReLu)   : ",testNet3.forward(X))
+print("Before train (ReLu)   : ",buildNet.forward(X))
 
 # print("weights : ", testNet.W)
 
 for i in range(1000):
-	testNet.train(X,Y,0.1)
-	testNet3.train(X,Y,0.1)
+	testNet.train(X,Y,0.001)
+	buildNet.train(X,Y,0.001)
 
 
 print("After train (sigmoid) : ",testNet.forward(X))
-print("After train (ReLu)    : ",testNet3.forward(X))
+print("After train (ReLu)    : ",buildNet.forward(X))
 
 
 '''
 Test case for function approximator
 '''
-DO = True
+DO = False
 GRAPHICS = True
 if(DO==True):
 	sinNet = base.NN(1,1,[128,256,128], func='lrelu', dropout=0.8, weight=10)
