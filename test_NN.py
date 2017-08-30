@@ -48,10 +48,21 @@ print("After train (ReLu)    : ",buildNet.forward(X))
 '''
 Test case for function approximator
 '''
-DO = False
+DO = True
 GRAPHICS = True
 if(DO==True):
-	sinNet = base.NN(1,1,[128,256,128], func='lrelu', dropout=0.8, weight=10)
+	input_layer = base.Layer('input',1)
+	hidden_layer1 = base.Layer('hidden',128,func='lrelu',dropout=0.8,weight='xavier',weight_scale=10.0)
+	hidden_layer2 = base.Layer('hidden',256,func='lrelu',dropout=0.8,weight='xavier',weight_scale=10.0)
+	hidden_layer3 = base.Layer('hidden',128,func='lrelu',dropout=0.8,weight='xavier',weight_scale=10.0)
+	output_layer = base.Layer('output',1)
+	sinNet = base.NNb()
+	sinNet.addLayer(input_layer)
+	sinNet.addLayer(hidden_layer1)
+	sinNet.addLayer(hidden_layer2)
+	sinNet.addLayer(hidden_layer3)
+	sinNet.addLayer(output_layer)
+	# sinNet = base.NN(1,1,[128,256,128], func='lrelu', dropout=0.8, weight=10)
 
 	X = np.arange(-math.pi/2,math.pi/2, 0.01)
 	# Y = np.sin(X)
@@ -87,7 +98,7 @@ if(DO==True):
 			# ax.axis([-3.5, 3.5, -1.2, 1.2])
 			# ax.axis([-3.s5, 3.5, -0.2, 3.5])
 			f.canvas.draw()
-			f.savefig(str(sinNet.func)+str(i)+"iter_weight"+str(sinNet.weight)+"_drop"+str(sinNet.dropout)+".png")
+			f.savefig("buildnet"+str(i)+"iter.png")
 
 			# print(sinNet.W)
 		# time.sleep(0.01)
