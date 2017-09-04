@@ -14,9 +14,9 @@ testNet = base.NN(2,2,[5,5], func='sigmoid', weight=5, dropout=1.0)
 testNet3 = base.NN(2,2,[128,128], func='relu', weight=5, dropout=0.8)
 
 layer1 = base.Layer('input',2)
-layer2 = base.Layer('hidden',5, func='lrelu', dropout=0.8)
-layer3 = base.Layer('hidden',5, func='sigmoid', dropout=0.8)
-layer4 = base.Layer('output',2)
+layer2 = base.Layer('hidden',5, func='lrelu', weigth='xavier', dropout=0.8)
+layer3 = base.Layer('hidden',5, func='sigmoid', weight='xavier', dropout=0.8)
+layer4 = base.Layer('output',2, dropout=0.8, weightt='xavier')
 
 buildNet = base.NNb()
 buildNet.addLayer(layer1)
@@ -52,17 +52,17 @@ DO = True
 GRAPHICS = True
 if(DO==True):
 	input_layer = base.Layer('input',1)
-	hidden_layer1 = base.Layer('hidden',128,func='lrelu',dropout=0.8,weight='xavier',weight_scale=10.0)
-	hidden_layer2 = base.Layer('hidden',256,func='lrelu',dropout=0.8,weight='xavier',weight_scale=10.0)
-	hidden_layer3 = base.Layer('hidden',128,func='lrelu',dropout=0.8,weight='xavier',weight_scale=10.0)
-	output_layer = base.Layer('output',1)
+	hidden_layer1 = base.Layer('hidden',128,func='lrelu',dropout=0.8,weight_scale=10.0,optimizer='ADAM')
+	hidden_layer2 = base.Layer('hidden',256,func='lrelu',dropout=0.8,weight_scale=10.0,optimizer='ADAM')
+	hidden_layer3 = base.Layer('hidden',128,func='lrelu',dropout=0.8,weight_scale=10.0,optimizer='ADAM')
+	output_layer = base.Layer('output',1,dropout=0.8,weight_scale=10.0,optimizer='ADAM')
 	sinNet = base.NNb()
 	sinNet.addLayer(input_layer)
 	sinNet.addLayer(hidden_layer1)
 	sinNet.addLayer(hidden_layer2)
 	sinNet.addLayer(hidden_layer3)
 	sinNet.addLayer(output_layer)
-	# sinNet = base.NN(1,1,[128,256,128], func='lrelu', dropout=0.8, weight=10)
+	sinNet2 = base.NN(1,1,[128,256,128], func='lrelu', dropout=0.8, weight=10)
 
 	X = np.arange(-math.pi/2,math.pi/2, 0.01)
 	# Y = np.sin(X)
@@ -82,19 +82,22 @@ if(DO==True):
 		if (x!=0 and y!=0):
 			for k in range(num_epoch):
 				sinNet.train([x],[y], 0.02)
+				sinNet2.train([x],[y], 0.02)
 			sample_x[i] = x
 			sample_y[i] = y
 
 		if((i==1 or i==num_iter-1) and GRAPHICS):
 			Yhat = np.zeros(Y.shape)
+			Yhat2 = np.zeros(Y.shape)
 			for j, x in enumerate(X):
 				Yhat[j] = sinNet.forward(x)
+				Yhat2[j] = sinNet2.forward(x)
 			f = plt.figure(1)
 			ax = f.gca()
 			f.show()
 			ax.cla()
 			# ax.plot(sample_x, sample_y, 'o', X, Y, X, Yhat)
-			ax.plot(X, Y, X, Yhat)
+			ax.plot(X, Y, X, Yhat, X, Yhat2)
 			# ax.axis([-3.5, 3.5, -1.2, 1.2])
 			# ax.axis([-3.s5, 3.5, -0.2, 3.5])
 			f.canvas.draw()

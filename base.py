@@ -192,7 +192,7 @@ class NN():
 			self.W[-1-i] = self.W[-1-i] - n * (np.dot(np.transpose(A[-2-i])/np.prod(A[-2-i].shape), D[i]))
 			self.B[-1-i] = self.B[-1-i] - n * D[i]
 
-class NNb():
+class NNb(NN):
 	'''
 	Create a Custom Neural Network
 	input:
@@ -223,11 +223,13 @@ class NNb():
 		else:
 			self.numW.append(layer.num_node)
 			if(layer.weight=='xavier'):
+				print('weight : Xavier')
 				layer.value = np.random.normal(0, 1,(self.layers[-1].num_node, layer.num_node))
 				layer.B = np.random.normal(0, 1,(1, layer.num_node))
 			else:
-				layer.value = 2*layer.weight_scale*np.random.rand(self.layers[-1].num_node, layer.num_node)-layer.weight_scale
-				layer.B = 2*layer.weight_scale*np.random.rand(1, layer.num_node)-layer.weight_scale
+				print('weight : Random')
+				layer.value = layer.weight_scale*np.random.rand(self.layers[-1].num_node, layer.num_node)-layer.weight_scale/2.0
+				layer.B = layer.weight_scale*np.random.rand(1, layer.num_node)-layer.weight_scale/2.0
 			self.W.append(layer.value)
 			self.B.append(layer.B)
 
@@ -238,30 +240,30 @@ class NNb():
 	Sigmoid function for an array
 	X(float[]) : array of values to calculate sigmoid
 	'''	
-	def sigmoid(self, X):
-		result = np.zeros(X.shape)
-		for i in range(len(X[0][:])):
-			try:
-				result[0][i] = 1 / (1+math.exp(-1*X[0][i])) # sigmoid function 
-			except OverflowError:
-				print("Over flow", X[0][i])
-		return result
+	# def sigmoid(self, X):
+	# 	result = np.zeros(X.shape)
+	# 	for i in range(len(X[0][:])):
+	# 		try:
+	# 			result[0][i] = 1 / (1+math.exp(-1*X[0][i])) # sigmoid function 
+	# 		except OverflowError:
+	# 			print("Over flow", X[0][i])
+	# 	return result
 
-	def relu(self, X):
-		result = np.zeros(X.shape)
-		for i in range(len(X[0][:])):
-			result[0][i] = max([0,X[0][i]])
-		return result
+	# def relu(self, X):
+	# 	result = np.zeros(X.shape)
+	# 	for i in range(len(X[0][:])):
+	# 		result[0][i] = max([0,X[0][i]])
+	# 	return result
 
-	def relu2(self, X):
-		result = X
-		return result
+	# def relu2(self, X):
+	# 	result = X
+	# 	return result
 
-	def lrelu(self, X):
-		result = np.zeros(X.shape)
-		for i in range(len(X[0][:])):
-			result[0][i] = X[0][i] if X[0][i] > 0 else 0.001*X[0][i]
-		return result
+	# def lrelu(self, X):
+	# 	result = np.zeros(X.shape)
+	# 	for i in range(len(X[0][:])):
+	# 		result[0][i] = X[0][i] if X[0][i] > 0 else 0.001*X[0][i]
+	# 	return result
 
 	'''
 	NN forward propagation
@@ -339,10 +341,23 @@ class NNb():
 				D[i+1] = np.transpose(np.dot(self.W[-i-1], np.transpose(D[i])))
 			elif (self.layers[i+1].func=='lrelu'):
 				D[i+1] = np.multiply(np.transpose(np.dot(self.W[-i-1], np.transpose(D[i]))), np.array([1 if element>0 else 0.001 for element in A[-2-i][0]]))
-			else:
+			else: # Default is ReLU
+				print('function note set')
 				D[i+1] = np.multiply(np.transpose(np.dot(self.W[-i-1], np.transpose(D[i]))), np.array([1 if element>0 else 0 for element in A[-2-i][0]]))
-			self.W[-1-i] = self.W[-1-i] - n * (np.dot(np.transpose(A[-2-i])/np.prod(A[-2-i].shape), D[i]))
-			self.B[-1-i] = self.B[-1-i] - n * D[i]
+			
+			# Update the parameters
+			dx = (np.dot(np.transpose(A[-2-i])/np.prod(A[-2-i].shape), D[i]))
+			if (self.layers[i+1].optimizer=='Vanilla'):
+				self.W[-1-i] = self.W[-1-i] - n * dx
+				self.B[-1-i] = self.B[-1-i] - n * D[i]
+			elif (self.layers[i+1].optimizer=='ADAM'):
+				self.layers[i+1].m = self.layers[i+1].beta1*self.layers[i+1].m + (1-self.layers[i+1].beta1)*dx
+				self.layers[i+1].v = self.layers[i+1].beta2*self.layers[i+1].v + (1-self.layers[i+1].beta2)*(dx**2)
+				self.W[-1-i] = self.W[-1-i] - n * self.layers[i+1].m / np.sqrt(v)+self.layers[i+1].eps
+				self.B[-1-i] = self.B[-1-i] - n * D[i]
+			else: # use Vanilla
+				self.W[-1-i] = self.W[-1-i] - n * dx
+				self.B[-1-i] = self.B[-1-i] - n * D[i]
 
 class Layer():
 	def __init__(self, type, num_node, **kargs):
@@ -350,21 +365,28 @@ class Layer():
 		self.num_node = num_node
 		self.value = None
 		self.B = None
+
+		self.beta1 = 0.9
+		self.beta2 = 0.999
+		self.eps = 1e-8
+		self.m = 0
+		self.v = 0
 		# if(self.type=='output' or self.type=='hidden'):
 		# 	self.value = np.zeros([prev_num_node, self.num_node])
 
 
 		self.func = 'relu'
 		self.dropout = 1.0
-		self.weight = 'xavier'
-		self.scale = 1.0
+		self.weight = 'Random'
+		self.weight_scale = 1.0
+		self.optimizer = 'Vanilla'
 
 		for name, value in kargs.items():
 			if(name=='func'):
 				self.func = value
 			elif(name=='dropout'):
-				self.dropout = value
+				self.dropout = float(value)
 			elif(name=='weight'):
 				self.weight = value
 			elif(name=='weight_scale'):
-				self.scale = value
+				self.weight_scale = float(value)
