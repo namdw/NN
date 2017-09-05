@@ -23,12 +23,12 @@ class NN():
 
 		## Initialize input variables
 		if (len(args)>0):
-			self.numX = args[0]
+			self.numX = int(args[0])
 			if(len(args)>1):
-				self.numY = args[1]	
+				self.numY = int(args[1])	
 				if(len(args)>2):
 					if(type(args[2])==type(1)):
-						self.numW = [args[2]]
+						self.numW = [int(args[2])]
 					else:
 						self.numW = args[2]
 		self.numH = len(self.numW) # number of hidden layers
@@ -45,7 +45,7 @@ class NN():
 				if(value=='xavier' or value=='he'):
 					self.weight = value
 				else:
-					self.weight = int(value)
+					self.weight = float(value)
 			if(name=='dropout' and value < 1.0 and value > 0.0):
 				self.dropout = float(value)
 
@@ -152,7 +152,7 @@ class NN():
 		Z = [0]*len(self.W)
 		A[0] = X
 		for i in range(len(self.W)):
-			Z[i] = np.dot(A[i], self.W[i]) + self.B[i] # z = a*w + b
+			Z[i] = np.dot(A[i] / np.prod(A[i].shape), self.W[i]) + self.B[i] # z = a*w + b
 			if (i==len(self.W)-1):
 				A[i+1] = Z[i]
 			else:
@@ -168,7 +168,9 @@ class NN():
 					A[i+1] = self.relu(Z[i])
 				if(self.dropout<1.0):
 					dropout_list = np.random.binomial([p for p in np.ones(A[i+1].shape)], self.dropout)
-					A[i+1] = np.multiply(A[i+1], dropout_list[0]) / np.sum(dropout_list) #* (1.0/(1-self.dropout)))
+					if(np.sum(dropout_list)==0):
+						dropout_list[np.random.randint(len(dropout_list))] = 1
+					A[i+1] = np.multiply(A[i+1], dropout_list[0]) #/ np.sum(dropout_list) #* (1.0/(1-self.dropout)))
 		
 		D = [0]*(len(self.W)+1)
 		# D[0] = (A[-1]-Y) * A[-1]*(1-A[-1])
@@ -189,7 +191,7 @@ class NN():
 				D[i+1] = np.multiply(np.transpose(np.dot(self.W[-i-1], np.transpose(D[i]))), np.array([1 if element>0 else 0.001 for element in A[-2-i][0]]))
 			else:
 				D[i+1] = np.multiply(np.transpose(np.dot(self.W[-i-1], np.transpose(D[i]))), np.array([1 if element>0 else 0 for element in A[-2-i][0]]))
-			self.W[-1-i] = self.W[-1-i] - n * (np.dot(np.transpose(A[-2-i])/np.prod(A[-2-i].shape), D[i]))
+			self.W[-1-i] = self.W[-1-i] - n * (np.dot(np.transpose(A[-2-i]), D[i]))
 			self.B[-1-i] = self.B[-1-i] - n * D[i]
 
 class NNb(NN):
@@ -274,7 +276,7 @@ class NNb(NN):
 			X = np.array([X])
 		a = X
 		for i in range(len(self.W)):
-			z = np.dot(a / np.prod(a.shape), self.W[i]) + self.B[i] # z = a*w + b
+			z = np.dot(a/np.prod(a.shape), self.W[i]) + self.B[i] # z = a*w + b / np.prod(a.shape)
 			if (i==len(self.W)-1):
 				return z
 			else:
@@ -304,7 +306,7 @@ class NNb(NN):
 		Z = [0]*len(self.W)
 		A[0] = X
 		for i in range(len(self.W)):
-			Z[i] = np.dot(A[i], self.W[i]) + self.B[i] # z = a*w + b
+			Z[i] = np.dot(A[i]/np.prod(A[i].shape), self.W[i]) + self.B[i] # z = a*w + b
 			if (i==len(self.W)-1):
 				A[i+1] = Z[i]
 			else:
@@ -322,7 +324,7 @@ class NNb(NN):
 					dropout_list = np.random.binomial([p for p in np.ones(A[i+1].shape)], self.layers[i+1].dropout)
 					if(np.sum(dropout_list)==0):
 						dropout_list[np.random.randint(len(dropout_list))] = 1
-					A[i+1] = np.multiply(A[i+1], dropout_list[0]) / np.sum(dropout_list) #* (1.0/(1-self.dropout)))
+					A[i+1] = np.multiply(A[i+1], dropout_list[0]) #/ np.sum(dropout_list) #* (1.0/(1-self.dropout)))
 		
 		D = [0]*(len(self.W)+1)
 		# D[0] = (A[-1]-Y) * A[-1]*(1-A[-1])
@@ -330,30 +332,34 @@ class NNb(NN):
 		# D[0] = 0.5 * (A[-1]-Y)**2 / np.prod(A[-1].shape) * A[-1]*(1-A[-1])
 		np.seterr(all='raise')
 		for i in range(len(self.W)):
-			if (self.layers[i+1].func=='sigmoid'):
+			if (self.layers[-1-i].func=='sigmoid'):
 				D[i+1] = np.multiply(np.transpose(np.dot(self.W[-i-1], np.transpose(D[i]))), np.multiply(A[-2-i],(1-A[-2-i])))
-			elif (self.layers[i+1].func=='relu'):
+			elif (self.layers[-1-i].func=='relu'):
 				try:
 					D[i+1] = np.multiply(np.transpose(np.dot(self.W[-i-1], np.transpose(D[i]))), np.array([1 if element>0 else 0 for element in A[-2-i][0]]))
 				except:
 					print(np.transpose(np.dot(self.W[-i-1], np.transpose(D[i]))))
-			elif (self.layers[i+1].func=='relu2'):
+			elif (self.layers[-1-i].func=='relu2'):
 				D[i+1] = np.transpose(np.dot(self.W[-i-1], np.transpose(D[i])))
-			elif (self.layers[i+1].func=='lrelu'):
+			elif (self.layers[-1-i].func=='lrelu'):
 				D[i+1] = np.multiply(np.transpose(np.dot(self.W[-i-1], np.transpose(D[i]))), np.array([1 if element>0 else 0.001 for element in A[-2-i][0]]))
 			else: # Default is ReLU
 				print('function note set')
 				D[i+1] = np.multiply(np.transpose(np.dot(self.W[-i-1], np.transpose(D[i]))), np.array([1 if element>0 else 0 for element in A[-2-i][0]]))
 			
 			# Update the parameters
-			dx = (np.dot(np.transpose(A[-2-i])/np.prod(A[-2-i].shape), D[i]))
-			if (self.layers[i+1].optimizer=='Vanilla'):
+			dx = (np.dot(np.transpose(A[-2-i]), D[i]))
+			if (self.layers[-1-i].optimizer=='Vanilla'):
 				self.W[-1-i] = self.W[-1-i] - n * dx
 				self.B[-1-i] = self.B[-1-i] - n * D[i]
-			elif (self.layers[i+1].optimizer=='ADAM'):
-				self.layers[i+1].m = self.layers[i+1].beta1*self.layers[i+1].m + (1-self.layers[i+1].beta1)*dx
-				self.layers[i+1].v = self.layers[i+1].beta2*self.layers[i+1].v + (1-self.layers[i+1].beta2)*(dx**2)
-				self.W[-1-i] = self.W[-1-i] - n * self.layers[i+1].m / np.sqrt(v)+self.layers[i+1].eps
+			elif (self.layers[-1-i].optimizer=='ADAM'):
+				try:
+					self.layers[-1-i].m = self.layers[-1-i].beta1*self.layers[-1-i].m + (1-self.layers[-1-i].beta1)*dx
+					self.layers[-1-i].v = self.layers[-1-i].beta2*self.layers[-1-i].v + (1-self.layers[-1-i].beta2)*(dx**2)
+					self.W[-1-i] = self.W[-1-i] - n * self.layers[-1-i].m / (np.sqrt(self.layers[-1-i].v)+self.layers[-1-i].eps)
+				except:
+					print('wrong')
+					# print(self.layers[-1-i].m, self.layers[-1-i].v)
 				self.B[-1-i] = self.B[-1-i] - n * D[i]
 			else: # use Vanilla
 				self.W[-1-i] = self.W[-1-i] - n * dx
@@ -390,3 +396,5 @@ class Layer():
 				self.weight = value
 			elif(name=='weight_scale'):
 				self.weight_scale = float(value)
+			elif(name=='optimizer'):
+				self.optimizer = value
