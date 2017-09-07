@@ -48,62 +48,72 @@ print("After train (ReLu)    : ",buildNet.forward(X))
 '''
 Test case for function approximator
 '''
+plt.ion()
 DO = True
 GRAPHICS = True
 if(DO==True):
 	input_layer = base.Layer('input',1)
-	hidden_layer1 = base.Layer('hidden',128,func='lrelu',dropout=0.8,weight_scale=4.0,optimizer='Vanilla')
-	hidden_layer2 = base.Layer('hidden',256,func='lrelu',dropout=0.8,weight_scale=4.0,optimizer='Vanilla')
-	hidden_layer3 = base.Layer('hidden',128,func='lrelu',dropout=0.8,weight_scale=4.0,optimizer='Vanilla')
-	output_layer = base.Layer('output',1,dropout=0.8,weight_scale=4.0,optimizer='Vanilla')
+	hidden_layer1 = base.Layer('hidden',128,func='relu',dropout=0.8,weight='xavier',weight_scale=2.0,optimizer='ADAM')
+	hidden_layer2 = base.Layer('hidden',256,func='relu',dropout=0.8,weight='xavier',weight_scale=2.0,optimizer='ADAM')
+	hidden_layer3 = base.Layer('hidden',128,func='relu',dropout=0.8,weight='xavier',weight_scale=2.0,optimizer='ADAM')
+	output_layer = base.Layer('output',1,dropout=0.8,weight='xavier',weight_scale=2.0,optimizer='ADAM')
 	sinNet = base.NNb()
 	sinNet.addLayer(input_layer)
 	sinNet.addLayer(hidden_layer1)
 	sinNet.addLayer(hidden_layer2)
 	sinNet.addLayer(hidden_layer3)
 	sinNet.addLayer(output_layer)
-	sinNet2 = base.NN(1,1,[128,256,128], func='lrelu', dropout=0.8, weight=10.0)
+	sinNet2 = base.NN(1,1,[128,256,128], func='relu', dropout=0.8, weight='xavier')
+
+	for layer in sinNet.layers:
+		print(layer.func, layer.dropout, layer.weight_scale)
+	print(sinNet2.func, sinNet2.dropout, sinNet2.weight)
 
 	X = np.arange(-math.pi/2,math.pi/2, 0.01)
 	# Y = np.sin(X)
 	Y = np.sin(X*4)
 
-	num_iter = 3000
+	num_iter = 10000
 	num_epoch = 3
 	sample_x = np.zeros(num_iter)
 	sample_y = np.zeros(num_iter)
 	
+	f = plt.figure(1)
+	ax = f.gca()
+	f.show()
+	ax.plot(X, Y)
+	line1 = ''
+	line2 = ''
 	# print(sinNet.W)
 	for i in range(num_iter):
 		x = np.random.rand()*math.pi-math.pi/2
 		y = np.sin(x*4) + 0.05 * (2*random.random()-1)
 		if (x!=0 and y!=0):
 			for k in range(num_epoch):
-				sinNet.train([x],[y], 0.003)
-				sinNet2.train([x],[y], 0.003)
+				sinNet.train([x],[y], 0.01)
+				sinNet2.train([x],[y], 0.001)
 			sample_x[i] = x
 			sample_y[i] = y
 
-		# if(((i+1)%1000==0 or  i==0) and GRAPHICS):
-		if(GRAPHICS):
+		if(((i+1)%1000==0 or i==0) and GRAPHICS):
+		# if(GRAPHICS):
 			Yhat = np.zeros(Y.shape)
 			Yhat2 = np.zeros(Y.shape)
 			for j, x in enumerate(X):
 				Yhat[j] = sinNet.forward(x)
 				Yhat2[j] = sinNet2.forward(x)
-			f = plt.figure(1)
-			ax = f.gca()
-			f.show()
-			ax.cla()
+			# ax.cla()
 			# ax.plot(sample_x, sample_y, 'o', X, Y, X, Yhat)
-			ax.plot(X, Y, X, Yhat, X, Yhat2, sample_x, sample_y, 'o')
+			if(line1!='' and line2!=''):
+				line1.remove()
+				line2.remove()
+			line1, = ax.plot(X, Yhat, 'tab:orange')
+			line2, = ax.plot(X, Yhat2, 'tab:green')
+			ax.plot(sample_x[i], sample_y[i], 'ob')
 			ax.axis([-2.0, 2.0, -1.5, 1.5])
-			# ax.axis([-3.s5, 3.5, -0.2, 3.5])
+			plt.title(str(i))
 			f.canvas.draw()
-			# f.savefig("buildnet"+str(i)+"iter.png")
-
-			# print(sinNet.W)
-		# time.sleep(0.01)
+			f.savefig("buildnet"+str(i)+"iter.png")
 
 
 	# f.savefig(str(num_iter)+" iterations.png")

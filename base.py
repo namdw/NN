@@ -2,7 +2,7 @@
 import numpy as np 
 import math
 
-class NN():
+class NN(object):
 	'''
 	Create a Custom Neural Network
 	input:
@@ -20,6 +20,12 @@ class NN():
 		self.epoch = 3
 		self.weight = 10
 		self.dropout = 1.0
+		self.beta1 = 0.9
+		self.beta2 = 0.999
+		self.epx = 1e-8
+		self.m = 0
+		self.v = 0
+		self.optimizer = 'Vanilla'
 
 		## Initialize input variables
 		if (len(args)>0):
@@ -42,11 +48,11 @@ class NN():
 			if(name=='epoch'):
 				self.epoch = int(value)
 			if(name=='weight'):
-				if(value=='xavier' or value=='he'):
+				if(value=='xavier'):
 					self.weight = value
 				else:
 					self.weight = float(value)
-			if(name=='dropout' and value < 1.0 and value > 0.0):
+			if(name=='dropout'):# and value < 1.0 and value > 0.0):
 				self.dropout = float(value)
 
 
@@ -153,7 +159,7 @@ class NN():
 		A[0] = X
 		for i in range(len(self.W)):
 			Z[i] = np.dot(A[i] / np.prod(A[i].shape), self.W[i]) + self.B[i] # z = a*w + b
-			if (i==len(self.W)-1):
+			if (i==(len(self.W)-1)):
 				A[i+1] = Z[i]
 			else:
 				if(self.func=='sigmoid'):
@@ -191,8 +197,22 @@ class NN():
 				D[i+1] = np.multiply(np.transpose(np.dot(self.W[-i-1], np.transpose(D[i]))), np.array([1 if element>0 else 0.001 for element in A[-2-i][0]]))
 			else:
 				D[i+1] = np.multiply(np.transpose(np.dot(self.W[-i-1], np.transpose(D[i]))), np.array([1 if element>0 else 0 for element in A[-2-i][0]]))
-			self.W[-1-i] = self.W[-1-i] - n * (np.dot(np.transpose(A[-2-i]), D[i]))
-			self.B[-1-i] = self.B[-1-i] - n * D[i]
+			dx = (np.dot(np.transpose(A[-2-i]), D[i]))
+			if (self.optimizer=='Vanilla'):
+				self.W[-1-i] = self.W[-1-i] - n * dx
+				self.B[-1-i] = self.B[-1-i] - n * D[i]
+			elif (self.optimizer=='ADAM'):
+				try:
+					self.m = self.beta1*self.m + (1-self.beta1)*dx
+					self.v = self.beta2*self.v + (1-self.beta2)*(dx**2)
+					self.W[-1-i] = self.W[-1-i] - n * self.m / (np.sqrt(self.v)+self.eps)
+				except:
+					print('wrong')
+					# print(self.layers[-1-i].m, self.layers[-1-i].v)
+				self.B[-1-i] = self.B[-1-i] - n * D[i]
+			else: # use Vanilla
+				self.W[-1-i] = self.W[-1-i] - n * dx
+				self.B[-1-i] = self.B[-1-i] - n * D[i]
 
 class NNb(NN):
 	'''
@@ -219,15 +239,20 @@ class NNb(NN):
 		self.Y = []
 		self.layers = []
 
+		self.t = 0
+
 	def addLayer(self, layer):
 		if(layer.type=='input' and self.num_layer==0):
 			self.numX = layer.num_node
 		else:
-			self.numW.append(layer.num_node)
+			if(layer.type=='output'):
+				self.numY = layer.num_node
+			else:
+				self.numW.append(layer.num_node)
 			if(layer.weight=='xavier'):
 				print('weight : Xavier')
-				layer.value = np.random.normal(0, 1,(self.layers[-1].num_node, layer.num_node))
-				layer.B = np.random.normal(0, 1,(1, layer.num_node))
+				layer.value = np.random.normal(0, 1/(self.numX+self.numY),(self.layers[-1].num_node, layer.num_node))
+				layer.B = np.random.normal(0, 1/(self.numX+self.numY),(1, layer.num_node))
 			else:
 				print('weight : Random')
 				layer.value = layer.weight_scale*np.random.rand(self.layers[-1].num_node, layer.num_node)-layer.weight_scale/2.0
@@ -302,6 +327,8 @@ class NNb(NN):
 			n = arg
 		else:
 			n = 1.0
+
+		self.t += 1
 		A = [0]*(len(self.W)+1)
 		Z = [0]*len(self.W)
 		A[0] = X
@@ -335,16 +362,12 @@ class NNb(NN):
 			if (self.layers[-1-i].func=='sigmoid'):
 				D[i+1] = np.multiply(np.transpose(np.dot(self.W[-i-1], np.transpose(D[i]))), np.multiply(A[-2-i],(1-A[-2-i])))
 			elif (self.layers[-1-i].func=='relu'):
-				try:
-					D[i+1] = np.multiply(np.transpose(np.dot(self.W[-i-1], np.transpose(D[i]))), np.array([1 if element>0 else 0 for element in A[-2-i][0]]))
-				except:
-					print(np.transpose(np.dot(self.W[-i-1], np.transpose(D[i]))))
+				D[i+1] = np.multiply(np.transpose(np.dot(self.W[-i-1], np.transpose(D[i]))), np.array([1 if element>0 else 0 for element in A[-2-i][0]]))
 			elif (self.layers[-1-i].func=='relu2'):
 				D[i+1] = np.transpose(np.dot(self.W[-i-1], np.transpose(D[i])))
 			elif (self.layers[-1-i].func=='lrelu'):
 				D[i+1] = np.multiply(np.transpose(np.dot(self.W[-i-1], np.transpose(D[i]))), np.array([1 if element>0 else 0.001 for element in A[-2-i][0]]))
 			else: # Default is ReLU
-				print('function note set')
 				D[i+1] = np.multiply(np.transpose(np.dot(self.W[-i-1], np.transpose(D[i]))), np.array([1 if element>0 else 0 for element in A[-2-i][0]]))
 			
 			# Update the parameters
@@ -353,15 +376,19 @@ class NNb(NN):
 				self.W[-1-i] = self.W[-1-i] - n * dx
 				self.B[-1-i] = self.B[-1-i] - n * D[i]
 			elif (self.layers[-1-i].optimizer=='ADAM'):
-				try:
-					self.layers[-1-i].m = self.layers[-1-i].beta1*self.layers[-1-i].m + (1-self.layers[-1-i].beta1)*dx
-					self.layers[-1-i].v = self.layers[-1-i].beta2*self.layers[-1-i].v + (1-self.layers[-1-i].beta2)*(dx**2)
-					self.W[-1-i] = self.W[-1-i] - n * self.layers[-1-i].m / (np.sqrt(self.layers[-1-i].v)+self.layers[-1-i].eps)
-				except:
-					print('wrong')
-					# print(self.layers[-1-i].m, self.layers[-1-i].v)
+				# try:
+				self.layers[-1-i].m = self.layers[-1-i].beta1*self.layers[-1-i].m + (1-self.layers[-1-i].beta1)*dx
+				mt = self.layers[-1-i].m/(1-self.layers[-1-i].beta1**self.t)
+				self.layers[-1-i].v = self.layers[-1-i].beta2*self.layers[-1-i].v + (1-self.layers[-1-i].beta2)*(dx**2)
+				vt = self.layers[-1-i].v/(1-self.layers[-1-i].beta2**self.t)
+				a = n*mt / (np.sqrt(vt+self.layers[-1-i].eps))
+				self.W[-1-i] = self.W[-1-i] - n * mt / (np.sqrt(vt+self.layers[-1-i].eps))
+				# except:
+				# 	print(np.min(np.abs(self.layers[-1-i].m)), np.min(np.abs(self.layers[-1-i].v)))
+				# 	input('press <Enter> to continue')
+				# 	# print(self.layers[-1-i].m, self.layers[-1-i].v)
 				self.B[-1-i] = self.B[-1-i] - n * D[i]
-			else: # use Vanilla
+			else: # use Vanilla by default
 				self.W[-1-i] = self.W[-1-i] - n * dx
 				self.B[-1-i] = self.B[-1-i] - n * D[i]
 
