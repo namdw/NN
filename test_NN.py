@@ -90,7 +90,7 @@ if(DO==True):
 		y = np.sin(x*4) + 0.05 * (2*random.random()-1)
 		if (x!=0 and y!=0):
 			for k in range(num_epoch):
-				sinNet.train([x],[y], 0.01)
+				sinNet.train([x],[y], 0.001)
 				sinNet2.train([x],[y], 0.001)
 			sample_x[i] = x
 			sample_y[i] = y

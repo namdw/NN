@@ -381,8 +381,8 @@ class NNb(NN):
 				mt = self.layers[-1-i].m/(1-self.layers[-1-i].beta1**self.t)
 				self.layers[-1-i].v = self.layers[-1-i].beta2*self.layers[-1-i].v + (1-self.layers[-1-i].beta2)*(dx**2)
 				vt = self.layers[-1-i].v/(1-self.layers[-1-i].beta2**self.t)
-				a = n*mt / (np.sqrt(vt+self.layers[-1-i].eps))
-				self.W[-1-i] = self.W[-1-i] - n * mt / (np.sqrt(vt+self.layers[-1-i].eps))
+				# a = n / (np.sqrt(vt+self.layers[-1-i].eps)) * mt
+				self.W[-1-i] = self.W[-1-i] - n / (np.sqrt(vt+self.layers[-1-i].eps)) * mt
 				# except:
 				# 	print(np.min(np.abs(self.layers[-1-i].m)), np.min(np.abs(self.layers[-1-i].v)))
 				# 	input('press <Enter> to continue')
