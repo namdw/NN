@@ -376,17 +376,13 @@ class NNb(NN):
 				self.W[-1-i] = self.W[-1-i] - n * dx
 				self.B[-1-i] = self.B[-1-i] - n * D[i]
 			elif (self.layers[-1-i].optimizer=='ADAM'):
-				# try:
 				self.layers[-1-i].m = self.layers[-1-i].beta1*self.layers[-1-i].m + (1-self.layers[-1-i].beta1)*dx
+				self.layers[-1-i].m = np.multiply(self.layers[-1-i].m, (self.layers[-1-i].m>10e-100))
 				mt = self.layers[-1-i].m/(1-self.layers[-1-i].beta1**self.t)
 				self.layers[-1-i].v = self.layers[-1-i].beta2*self.layers[-1-i].v + (1-self.layers[-1-i].beta2)*(dx**2)
+				self.layers[-1-i].v = np.multiply(self.layers[-1-i].v, (self.layers[-1-i].v>10e-100))
 				vt = self.layers[-1-i].v/(1-self.layers[-1-i].beta2**self.t)
-				# a = n / (np.sqrt(vt+self.layers[-1-i].eps)) * mt
-				self.W[-1-i] = self.W[-1-i] - n / (np.sqrt(vt+self.layers[-1-i].eps)) * mt
-				# except:
-				# 	print(np.min(np.abs(self.layers[-1-i].m)), np.min(np.abs(self.layers[-1-i].v)))
-				# 	input('press <Enter> to continue')
-				# 	# print(self.layers[-1-i].m, self.layers[-1-i].v)
+				self.W[-1-i] = self.W[-1-i] - n / (np.sqrt(self.layers[-1-i].v+self.layers[-1-i].eps)) * self.layers[-1-i].m
 				self.B[-1-i] = self.B[-1-i] - n * D[i]
 			else: # use Vanilla by default
 				self.W[-1-i] = self.W[-1-i] - n * dx
