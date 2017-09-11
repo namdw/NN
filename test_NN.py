@@ -117,4 +117,4 @@ if(DO==True):
 
 
 	# f.savefig(str(num_iter)+" iterations.png")
-	# print(sinNet.layers[1].m)
+	print(sinNet.layers[1].m)
