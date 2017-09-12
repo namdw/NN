@@ -324,7 +324,7 @@ class NNb(NN):
 			X = np.array([X])
 			Y = np.array([Y])
 		if(len(arg)==1):
-			n = arg
+			n = float(arg[0])
 		else:
 			n = 1.0
 
@@ -370,11 +370,25 @@ class NNb(NN):
 			else: # Default is ReLU
 				D[i+1] = np.multiply(np.transpose(np.dot(self.W[-i-1], np.transpose(D[i]))), np.array([1 if element>0 else 0 for element in A[-2-i][0]]))
 			
-			# Update the parameters
+			# Update the parameters (reference to http://cs231n.github.io/neural-networks-3/)
 			dx = (np.dot(np.transpose(A[-2-i]), D[i]))
 			if (self.layers[-1-i].optimizer=='Vanilla'):
 				self.W[-1-i] = self.W[-1-i] - n * dx
-				self.B[-1-i] = self.B[-1-i] - n * D[i]
+
+			elif (self.layers[-1-i].optimizer=='Momentum'):
+				self.layers[-1-i].v = np.multiply(self.layers[-1-i].v, (self.layers[-1-i].v>10e-100))
+				self.layers[-1-i].v_prev = self.layers[-1-i].v
+				self.layers[-1-i].v = self.layers[-1-i].mu * self.layers[-1-i].v - n * dx
+				self.W[-1-i] = self.W[-1-i] - self.layers[-1-i].mu * self.layers[-1-i].v_prev + (1+self.layers[-1-i].mu) * self.layers[-1-i].v
+			
+			elif (self.layers[-1-i].optimizer=='Adagrad'):
+				self.layers[-1-i].cache = np.multiply(dx, dx)
+				self.W[-1-i] = self.W[-1-i] - n * np.divide(dx, (np.sqrt(self.layers[-1-i].cache) + self.layers[-1-1].eps))
+			
+			elif (self.layers[-1-i].optimizer=='RMSprop'):
+				self.layers[-1-i].cache = self.layers[-1-i].decayrate * self.layers[-1-i].cache + (1-self.layers[-1-i].decayrate) * np.multiply(dx, dx)
+				self.W[-1-i] = self.W[-1-i] - n * dx / (np.sqrt(self.layers[-1-i].cache) + self.layers[-1-1].eps)
+			
 			elif (self.layers[-1-i].optimizer=='ADAM'):
 				self.layers[-1-i].m = self.layers[-1-i].beta1*self.layers[-1-i].m + (1-self.layers[-1-i].beta1)*dx
 				self.layers[-1-i].m = np.multiply(self.layers[-1-i].m, (self.layers[-1-i].m>10e-100))
@@ -383,10 +397,10 @@ class NNb(NN):
 				self.layers[-1-i].v = np.multiply(self.layers[-1-i].v, (self.layers[-1-i].v>10e-100))
 				vt = self.layers[-1-i].v/(1-self.layers[-1-i].beta2**self.t)
 				self.W[-1-i] = self.W[-1-i] - n / (np.sqrt(self.layers[-1-i].v+self.layers[-1-i].eps)) * self.layers[-1-i].m
-				self.B[-1-i] = self.B[-1-i] - n * D[i]
+			
 			else: # use Vanilla by default
 				self.W[-1-i] = self.W[-1-i] - n * dx
-				self.B[-1-i] = self.B[-1-i] - n * D[i]
+			self.B[-1-i] = self.B[-1-i] - n * D[i]
 
 class Layer():
 	def __init__(self, type, num_node, **kargs):
@@ -395,11 +409,16 @@ class Layer():
 		self.value = None
 		self.B = None
 
+		# variables for optimization
 		self.beta1 = 0.9
 		self.beta2 = 0.999
 		self.eps = 1e-8
 		self.m = 0
 		self.v = 0
+		self.v_prev = 0
+		self.cache = 0
+		self.decayrate = 0.99
+		self.mu = 0.3
 		# if(self.type=='output' or self.type=='hidden'):
 		# 	self.value = np.zeros([prev_num_node, self.num_node])
 

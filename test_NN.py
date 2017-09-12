@@ -5,6 +5,7 @@ import math
 import matplotlib.pyplot as plt
 import time
 import random
+import copy
 
 '''
 Simple true/false test
@@ -53,21 +54,24 @@ DO = True
 GRAPHICS = True
 if(DO==True):
 	input_layer = base.Layer('input',1)
-	hidden_layer1 = base.Layer('hidden',128,func='relu',dropout=0.8,weight='xavier',weight_scale=2.0,optimizer='ADAM')
-	hidden_layer2 = base.Layer('hidden',256,func='relu',dropout=0.8,weight='xavier',weight_scale=2.0,optimizer='ADAM')
-	hidden_layer3 = base.Layer('hidden',128,func='relu',dropout=0.8,weight='xavier',weight_scale=2.0,optimizer='ADAM')
-	output_layer = base.Layer('output',1,dropout=0.8,weight='xavier',weight_scale=2.0,optimizer='ADAM')
+	hidden_layer1 = base.Layer('hidden',128,func='lrelu',dropout=0.8,weight='xavier',weight_scale=2.0,optimizer='Vanilla')
+	hidden_layer2 = base.Layer('hidden',256,func='lrelu',dropout=0.8,weight='xavier',weight_scale=2.0,optimizer='Vanilla')
+	hidden_layer3 = base.Layer('hidden',128,func='lrelu',dropout=0.8,weight='xavier',weight_scale=2.0,optimizer='Vanilla')
+	output_layer = base.Layer('output',1,dropout=0.8,weight='xavier',weight_scale=2.0,optimizer='Vanilla')
 	sinNet = base.NNb()
 	sinNet.addLayer(input_layer)
 	sinNet.addLayer(hidden_layer1)
 	sinNet.addLayer(hidden_layer2)
 	sinNet.addLayer(hidden_layer3)
 	sinNet.addLayer(output_layer)
-	sinNet2 = base.NN(1,1,[128,256,128], func='relu', dropout=0.8, weight='xavier')
+	# sinNet2 = base.NN(1,1,[128,256,128], func='lrelu', dropout=0.8, weight='xavier')
+	sinNet2 = copy.deepcopy(sinNet)
+	for layer in sinNet2.layers:
+		layer.optimizer = 'Momentum'
 
-	for layer in sinNet.layers:
-		print(layer.func, layer.dropout, layer.weight_scale)
-	print(sinNet2.func, sinNet2.dropout, sinNet2.weight)
+	# for layer in sinNet2.layers:
+	# 	print(layer.func, layer.optimizer)
+	# print(sinNet2.func, sinNet2.dropout, sinNet2.weight)
 
 	X = np.arange(-math.pi/2,math.pi/2, 0.01)
 	# Y = np.sin(X)
@@ -90,7 +94,7 @@ if(DO==True):
 		y = np.sin(x*4) + 0.05 * (2*random.random()-1)
 		if (x!=0 and y!=0):
 			for k in range(num_epoch):
-				sinNet.train([x],[y], 0.01)
+				sinNet.train([x],[y], 0.001)
 				sinNet2.train([x],[y], 0.001)
 			sample_x[i] = x
 			sample_y[i] = y
