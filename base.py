@@ -262,36 +262,6 @@ class NNb(NN):
 
 		self.layers.append(layer)
 
-
-	'''
-	Sigmoid function for an array
-	X(float[]) : array of values to calculate sigmoid
-	'''	
-	# def sigmoid(self, X):
-	# 	result = np.zeros(X.shape)
-	# 	for i in range(len(X[0][:])):
-	# 		try:
-	# 			result[0][i] = 1 / (1+math.exp(-1*X[0][i])) # sigmoid function 
-	# 		except OverflowError:
-	# 			print("Over flow", X[0][i])
-	# 	return result
-
-	# def relu(self, X):
-	# 	result = np.zeros(X.shape)
-	# 	for i in range(len(X[0][:])):
-	# 		result[0][i] = max([0,X[0][i]])
-	# 	return result
-
-	# def relu2(self, X):
-	# 	result = X
-	# 	return result
-
-	# def lrelu(self, X):
-	# 	result = np.zeros(X.shape)
-	# 	for i in range(len(X[0][:])):
-	# 		result[0][i] = X[0][i] if X[0][i] > 0 else 0.001*X[0][i]
-	# 	return result
-
 	'''
 	NN forward propagation
 	X(float[]) : array of inputs to calculate the forward propagation
@@ -386,8 +356,9 @@ class NNb(NN):
 				self.W[-1-i] = self.W[-1-i] - n * np.divide(dx, (np.sqrt(self.layers[-1-i].cache) + self.layers[-1-1].eps))
 			
 			elif (self.layers[-1-i].optimizer=='RMSprop'):
-				self.layers[-1-i].cache = self.layers[-1-i].decayrate * self.layers[-1-i].cache + (1-self.layers[-1-i].decayrate) * np.multiply(dx, dx)
-				self.W[-1-i] = self.W[-1-i] - n * dx / (np.sqrt(self.layers[-1-i].cache) + self.layers[-1-1].eps)
+				self.layers[-1-i].cache = self.layers[-1-i].decayrate * self.layers[-1-i].cache + (1-self.layers[-1-i].decayrate) * (dx**2)
+				# self.W[-1-i] = self.W[-1-i] - n * np.divide(dx, (np.sqrt(self.layers[-1-i].cache) + self.layers[-1-1].eps))
+				self.W[-1-i] = self.W[-1-i] - n * dx * self.layers[-1-i].mu * (np.sqrt(self.layers[-1-i].cache) + self.layers[-1-1].eps)
 			
 			elif (self.layers[-1-i].optimizer=='ADAM'):
 				self.layers[-1-i].m = self.layers[-1-i].beta1*self.layers[-1-i].m + (1-self.layers[-1-i].beta1)*dx
@@ -418,7 +389,7 @@ class Layer():
 		self.v_prev = 0
 		self.cache = 0
 		self.decayrate = 0.99
-		self.mu = 0.3
+		self.mu = 0.1
 		# if(self.type=='output' or self.type=='hidden'):
 		# 	self.value = np.zeros([prev_num_node, self.num_node])
 

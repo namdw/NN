@@ -67,7 +67,7 @@ if(DO==True):
 	# sinNet2 = base.NN(1,1,[128,256,128], func='lrelu', dropout=0.8, weight='xavier')
 	sinNet2 = copy.deepcopy(sinNet)
 	for layer in sinNet2.layers:
-		layer.optimizer = 'Momentum'
+		layer.optimizer = 'RMSprop'
 
 	# for layer in sinNet2.layers:
 	# 	print(layer.func, layer.optimizer)
@@ -99,8 +99,8 @@ if(DO==True):
 			sample_x[i] = x
 			sample_y[i] = y
 
-		if(((i+1)%1000==0 or i==0) and GRAPHICS):
-		# if(GRAPHICS):
+		#if(((i+1)%1000==0 or i==0) and GRAPHICS):
+		## if(GRAPHICS):
 			Yhat = np.zeros(Y.shape)
 			Yhat2 = np.zeros(Y.shape)
 			for j, x in enumerate(X):
@@ -117,7 +117,7 @@ if(DO==True):
 			ax.axis([-2.0, 2.0, -1.5, 1.5])
 			plt.title(str(i))
 			f.canvas.draw()
-			f.savefig("buildnet"+str(i)+"iter.png")
+			#f.savefig("buildnet"+str(i)+"iter.png")
 
 
 	# f.savefig(str(num_iter)+" iterations.png")
